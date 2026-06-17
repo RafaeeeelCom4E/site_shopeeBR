@@ -172,7 +172,7 @@ class App {
                 appState.setPage('tracking');
             });
         }
-
+//
         const trackLinkMobile = document.getElementById('trackLinkMobile');
         if (trackLinkMobile) {
             trackLinkMobile.addEventListener('click', () => {
