@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ShopBr - Sua loja online com os melhores produtos de tecnologia">
+    <title>ShopBr - Sua Loja Online</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- HEADER — fixo, sempre visível, atualizado pelo JS via updateHeader() -->
+    <header class="header">
+
+        <div class="header-main">
+            <div class="container header-content">
+                <button class="logo" id="logoBtn" type="button">
+                    <span class="brand-mark">SB</span>
+                    <span class="brand-text">ShopBR</span>  
+                </button>
+
+                <div class="search-bar">
+                    <i class="fas fa-search" id="searchIconBtn" title="Pesquisar"></i>
+                    <input type="text" placeholder="O que você busca?" id="searchInput" class="search-input">
+                </div>
+
+                <div class="header-actions">
+                    <button class="track-button" id="trackLinkMobile">Rastrear</button>
+                    <div class="header-icons">
+                        <button class="icon-btn" id="favoriteBtn" title="Favoritos">
+                            <i class="far fa-heart"></i>
+                            <span class="badge" id="favoriteBadge">0</span>
+                        </button>
+                        <button class="icon-btn" id="cartBtn" title="Carrinho">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="badge" id="cartBadge">0</span>
+                        </button>
+                        <button class="icon-btn" id="profileBtn" title="Perfil">
+                            <i class="fas fa-user"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="header-nav">
+            <div class="container">
+                <div class="nav-categories" id="navCategories">
+                    <!-- Categorias geradas pelo JavaScript -->
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- CONTEÚDO DA PÁGINA — trocado pelo JS a cada navegação -->
+    <div id="root"></div>
+
+    <!-- FOOTER — fixo, sempre visível -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Sobre a ShopBr</h4>
+                    <p class="footer-text">Fundada em 2026 por dois estudantes visionários, a ShopBr nasceu do desejo de criar o e-commerce mais rápido e confiável do Brasil, unindo tecnologia de ponta com atendimento humanizado.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Suporte</h4>
+                    <ul>
+                        <li><a href="#" class="footer-nav-link" data-page="contact">Central de Ajuda</a></li>
+                        <li><a href="#" class="footer-nav-link" data-page="tracking">Acompanhe seu pedido</a></li>
+                        <li><a href="#" class="footer-nav-link" data-page="contact">Devoluções</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Políticas</h4>
+                    <ul>
+                        <li><a href="#" class="footer-nav-link" data-page="policy">Privacidade</a></li>
+                        <li><a href="#" class="footer-nav-link" data-page="policy">Termos de uso</a></li>
+                        <li><a href="#" class="footer-nav-link" data-page="policy">Cookies</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contato</h4>
+                    <p class="footer-text">Email: contato@shopbr.com.br<br>Telefone: (11) 4002-8922</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 ShopBr. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="data.js"></script>
+    <script src="state.js"></script>
+    <script src="components.js"></script>
+    <script src="pages.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
