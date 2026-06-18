@@ -139,10 +139,32 @@ app.post('/api/login', async (req, res) => {
     if (user.senha !== senha) {
       return res.status(401).json({ error: 'Senha incorreta' });
     }
-    res.json({ id: user.id, nome: user.nome, email: user.email, is_admin: user.is_admin });
+    res.json({ id: user.id, nome: user.nome, email: user.email, is_admin: user.is_admin, telefone: user.telefone, endereco: user.endereco });  
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erro ao fazer login' });
+  }
+});
+
+app.put('/api/usuarios/:id', async (req, res) => {
+  const { id } = req.params;
+  // Agora recebemos o nome também do front-end
+  const { nome, telefone, endereco } = req.body; 
+  try {
+    // Atualizamos o SET para incluir o nome ($1), telefone ($2) e endereco ($3)
+    const result = await pool.query(
+      'UPDATE usuarios SET nome = $1, telefone = $2, endereco = $3 WHERE id = $4 RETURNING id, nome, email, is_admin, telefone, endereco',
+      [nome, telefone, endereco, id]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+    
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erro ao atualizar perfil' });
   }
 });
 

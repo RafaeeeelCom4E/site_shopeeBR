@@ -376,15 +376,22 @@ class Pages {
                             <div class="section-title">
                                 <h2>Dados pessoais</h2>
                             </div>
-                            <div class="profile-form">
+                           <div class="profile-form">
                                 <label>Nome</label>
-                                <input type="text" value="${user.nome}" />
+                                <input type="text" id="profile-nome" value="${user.nome || ''}" />
+                                
                                 <label>E-mail</label>
-                                <input type="email" value="${user.email}" />
+                                <input type="email" value="${user.email || ''}" disabled style="background-color: #f5f5f5;" />
+                                
                                 <label>Telefone</label>
-                                <input type="text" value="${user.telefone}" />
+                                <input type="text" id="profile-telefone" value="${user.telefone || ''}" placeholder="85 99999-9999" maxlength="13" oninput="this.value = maskPhone(this.value)" />
+                                
                                 <label>Endereço</label>
-                                <input type="text" value="${user.endereco}" />
+                                <input type="text" id="profile-endereco" value="${user.endereco || ''}" placeholder="Ex: Rua Exemplo, 123" />
+
+                                <button class="btn btn-primary" style="margin-top: 15px; width: 100%;" onclick="saveUserData()">
+                                    <i class="fas fa-save"></i> Salvar Alterações
+                                </button>
                             </div>
                         </div>
 
@@ -727,3 +734,44 @@ class Pages {
         `;
     }
 }
+
+
+// Função para salvar os dados no Banco de Dados
+window.saveUserData = async function() {
+    // Atualizado para ler os novos IDs exclusivos do perfil
+    const nome = document.getElementById('profile-nome').value; 
+    const telefone = document.getElementById('profile-telefone').value;
+    const endereco = document.getElementById('profile-endereco').value;
+    
+    if(appState && appState.user) {
+        try {
+            const response = await fetch(`http://localhost:3000/api/usuarios/${appState.user.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nome, telefone, endereco }) 
+            });
+            
+            if (!response.ok) throw new Error('Erro ao salvar no banco');
+            
+            const updatedUser = await response.json();
+            
+            // Atualiza o estado global e o localStorage com a resposta vinda do banco
+            appState.user = updatedUser;
+            localStorage.setItem('user', JSON.stringify(appState.user)); 
+            
+            // Renderiza novamente a tela para atualizar o nome na barra lateral
+            render(); 
+            
+            if(typeof showToast === 'function') {
+                showToast('Dados salvos no banco de dados com sucesso!');
+            } else {
+                alert('Dados salvos no banco de dados com sucesso!');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Erro ao salvar. Verifique se o servidor Node está rodando.');
+        }
+    }
+};
