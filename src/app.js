@@ -1,10 +1,27 @@
 const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');
+const multer = require('multer');
 const path = require('path');
 
 const app = express();
 const port = 3000;
+
+// Configura onde e com que nome a imagem será salva
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/'); // Salva na pasta uploads
+  },
+  filename: (req, file, cb) => {
+    // Cria um nome único para não substituir imagens com o mesmo nome
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+const upload = multer({ storage: storage });
+
+// Permite que o front-end acesse as imagens pela URL (ex: /uploads/foto.png)
+app.use('/uploads', express.static('uploads'));
 
 // CORS: aceita requisições de qualquer origem
 app.use(cors({
@@ -37,14 +54,23 @@ app.get('/api/produtos', async (req, res) => {
   }
 });
 
-app.post('/api/produtos', async (req, res) => {
-  const { nome, categoria, preco, precoOriginal, desconto, avaliacao, totalAvaliacoes, vendedor, vendedorAvaliacao, estoque, descricao, imagem_url } = req.body;
+app.post('/api/produtos', upload.single('imagem'), async (req, res) => {
+  const { nome, categoria, preco, precoOriginal, desconto, avaliacao, totalAvaliacoes, vendedor, vendedorAvaliacao, estoque, descricao } = req.body;
+  
+  // Se veio um arquivo, salva o caminho dele. Se não, fica vazio.
+  const imagem_url = req.file ? `/uploads/${req.file.filename}` : '';
+
   try {
     const query = `
       INSERT INTO produtos (nome, categoria, preco, precoOriginal, desconto, avaliacao, totalAvaliacoes, vendedor, vendedorAvaliacao, estoque, descricao, imagem_url)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *
     `;
-    const values = [nome, categoria, preco, precoOriginal || null, desconto || 0, avaliacao || 0, totalAvaliacoes || 0, vendedor || '', vendedorAvaliacao || 0, estoque || 0, descricao || '', imagem_url || ''];
+    const values = [
+        nome, categoria, preco, 
+        precoOriginal || null, desconto || 0, avaliacao || 0, 
+        totalAvaliacoes || 0, vendedor || '', vendedorAvaliacao || 0, 
+        estoque || 0, descricao || '', imagem_url
+    ];
     const result = await pool.query(query, values);
     res.status(201).json(result.rows[0]);
   } catch (err) {

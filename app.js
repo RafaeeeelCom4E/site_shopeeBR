@@ -516,27 +516,24 @@ class App {
     }
 }
 
-// Lógica de manipulação de Eventos do Admin
 async function handleAdminCreateProduct(e) {
     e.preventDefault();
-    const formData = new FormData(e.target);
-    const data = Object.fromEntries(formData.entries());
     
-    // Tratamento de conversão de dados
-    data.preco = parseFloat(data.preco) || 0;
-    data.estoque = parseInt(data.estoque) || 0;
+    // O FormData captura todos os campos automaticamente, incluindo o arquivo de imagem!
+    const formData = new FormData(e.target);
     
     try {
-        console.log("Dados sendo enviados:", JSON.stringify(data, null, 2));
         const res = await fetch('/api/produtos', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            // Atenção: Quando enviamos arquivos, NÃO colocamos o headers de 'Content-Type'. 
+            // O próprio navegador faz isso automaticamente agora.
+            body: formData 
         });
+        
         if (res.ok) {
             alert('Produto criado com sucesso!');
             await fetchProducts(); // recarrega a lista do banco
-            appState.setPage('admin'); // re-renderiza
+            appState.setPage('admin'); // re-renderiza a tela limpa
         } else {
             alert('Erro ao criar produto.');
         }

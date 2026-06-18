@@ -17,7 +17,10 @@ class Components {
         }
         
         const discount = precoOriginal > precoAtual ? Math.round(((precoOriginal - precoAtual) / precoOriginal) * 100) : 0;
-        const vendidoPercent = Math.floor(Math.random() * 80) + 10; // 10-90%
+        
+        // NOVO CÁLCULO: Porcentagem de estoque fixa baseada no ID do produto
+        const idSemente = typeof product.id === 'string' ? product.id.charCodeAt(0) : (product.id || 1);
+        const vendidoPercent = (idSemente * 47) % 50 + 35; // Gera sempre um valor fixo entre 35% e 84%
 
         return `
             <div class="product-card" data-product-id="${product.id}">
@@ -51,7 +54,6 @@ class Components {
             </div>
         `;
     }
-
     // Hero Carousel
     static createHeroCarousel() {
         return `
@@ -134,7 +136,13 @@ static createPromotionalBanners() {
 
     // Daily Offers Section
     static createDailyOffers() {
-        const offerProducts = PRODUCTS.filter(p => p.desconto > 30).slice(0, 8);
+        // Sorteia um número aleatório baseado na quantidade total de produtos
+        const randomIndex = Math.floor(Math.random() * PRODUCTS.length);
+        // Pega o produto correspondente a esse número
+        const randomProduct = PRODUCTS[randomIndex];
+        
+        // Se a lista de produtos estiver vazia por algum motivo, não quebra a página
+        const productHtml = randomProduct ? this.createProductCard(randomProduct) : '';
 
         return `
             <section class="daily-offers">
@@ -144,7 +152,7 @@ static createPromotionalBanners() {
                         ${this.createCountdownTimer()}
                     </div>
                     <div class="offers-scroll" id="offersScroll">
-                        ${offerProducts.map(product => this.createProductCard(product)).join('')}
+                        ${productHtml}
                     </div>
                 </div>
             </section>

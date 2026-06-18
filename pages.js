@@ -82,23 +82,28 @@ class Pages {
                         </button>
                     </div>
                     <div class="favorites-grid">
-                        ${favorites.map(product => `
+                        ${favorites.map(product => {
+            // Forçando a conversão dos preços para número antes de usar o toFixed
+            const preco = Number(product.preco) || 0;
+            const precoOriginal = Number(product.precoOriginal) || 0;
+
+            return `
                             <div class="favorite-card" data-product-id="${product.id}">
-                                <img src="${product.imagens[0]}" alt="${product.nome}">
+                                <img src="${product.imagem_url || (product.imagens && product.imagens[0]) || ''}" alt="${product.nome}">
                                 <div class="favorite-info">
                                     <h3>${product.nome}</h3>
                                     <div class="favorite-prices">
-                                        <span class="current-price">R$ ${product.preco.toFixed(2)}</span>
-                                        ${product.precoOriginal > product.preco ? `<span class="original-price">R$ ${product.precoOriginal.toFixed(2)}</span>` : ''}
+                                        <span class="current-price">R$ ${preco.toFixed(2)}</span>
+                                        ${precoOriginal > preco ? `<span class="original-price">R$ ${precoOriginal.toFixed(2)}</span>` : ''}
                                     </div>
-                                    ${product.precoOriginal > product.preco ? `<span class="discount-text">${Math.round(((product.precoOriginal - product.preco) / product.precoOriginal) * 100)}% OFF</span>` : ''}
+                                    ${precoOriginal > preco ? `<span class="discount-text">${Math.round(((precoOriginal - preco) / precoOriginal) * 100)}% OFF</span>` : ''}
                                 </div>
                                 <div class="favorite-actions">
                                     <button class="btn btn-primary add-to-cart" data-product-id="${product.id}">Adicionar ao carrinho</button>
                                     <button class="btn btn-outline remove-favorite" data-product-id="${product.id}">Remover</button>
                                 </div>
                             </div>
-                        `).join('')}
+                        `}).join('')}
                     </div>
                 </div>
             </main>
@@ -119,22 +124,22 @@ class Pages {
             <main class="product-detail">
                 <div class="container">
                     <div class="product-detail-grid">
-                        <!-- Coluna esquerda: Galeria -->
                         <div class="product-gallery">
                             <div class="main-image">
-                                <img id="mainImage" src="${product.imagens[0]}" alt="${product.nome}">
+                                <img id="mainImage" src="${product.imagem_url || (product.imagens && product.imagens[0]) || ''}" alt="${product.nome}">
                                 <button class="favorite-btn ${isFavorite ? 'active' : ''}" data-product-id="${product.id}">
                                     <i class="fa${isFavorite ? 's' : 'r'} fa-heart"></i>
                                 </button>
                             </div>
                             <div class="thumbnails">
-                                ${product.imagens.map((img, idx) => `
+                                ${product.imagens ? product.imagens.map((img, idx) => `
                                     <img src="${img}" alt="Thumb ${idx}" class="thumbnail" data-image="${img}">
-                                `).join('')}
+                                `).join('') : `
+                                    <img src="${product.imagem_url || ''}" alt="Thumb 1" class="thumbnail" data-image="${product.imagem_url || ''}">
+                                `}
                             </div>
                         </div>
 
-                        <!-- Coluna central: Informações -->
                         <div class="product-details">
                             <div class="product-header">
                                 <h1>${product.nome}</h1>
@@ -164,12 +169,12 @@ class Pages {
                             <div class="product-specs">
                                 <h3>Ficha Técnica</h3>
                                 <table class="specs-table">
-                                    ${Object.entries(product.fichaTecnica).map(([key, value]) => `
+                                    ${product.fichaTecnica ? Object.entries(product.fichaTecnica).map(([key, value]) => `
                                         <tr>
                                             <td class="spec-key">${key}</td>
                                             <td class="spec-value">${value}</td>
                                         </tr>
-                                    `).join('')}
+                                    `).join('') : ''}
                                 </table>
                             </div>
 
@@ -186,10 +191,9 @@ class Pages {
                             </div>
                         </div>
 
-                        <!-- Coluna direita: Sidebar de compra -->
                         <div class="product-sidebar">
                             <div class="price-section">
-                                <span class="original-price">R$ ${product.precoOriginal.toFixed(2)}</span>
+                                <span class="original-price">R$ ${product.precoOriginal ? product.precoOriginal.toFixed(2) : product.preco.toFixed(2)}</span>
                                 <div class="current-price">R$ ${product.preco.toFixed(2)}</div>
                                 ${discount > 0 ? `<span class="discount-text">${discount}% de desconto</span>` : ''}
                             </div>
@@ -312,7 +316,7 @@ class Pages {
         `;
     }
 
-   static renderProfile() {
+    static renderProfile() {
         if (appState.user && appState.user.is_admin) {
             return `
                 <main class="main-content profile-page">
@@ -340,7 +344,7 @@ class Pages {
             appState.setPage('login');
             return '';
         }
-        
+
         // As compras devem ser carregadas (para simplicidade, usaremos um mock vazio por enquanto se não tiver)
         const orders = user.compras || [];
 
@@ -354,15 +358,10 @@ class Pages {
                             <p>${user.email}</p>
                         </div>
                         <nav class="profile-menu">
-                            <button class="menu-item">Meus Pedidos</button>
-                            <button class="menu-item">Favoritos</button>
-                            <button class="menu-item">Endereços</button>
-                            <button class="menu-item">Formas de Pagamento</button>
-                            <button class="menu-item">Configurações</button>
-                            ${appState.user && appState.user.is_admin ? '<button class="menu-item" onclick="appState.setPage(\'admin\'); render();">Painel Admin</button>' : ''}
-                            
-                            <button class="menu-item logout" onclick="showToast('Saindo da Conta...'); setTimeout(() => { appState.logout(); appState.setPage('home'); render(); }, 1500);">Sair</button>
-                        </nav>
+    ${appState.user && appState.user.is_admin ? '<button class="menu-item" onclick="appState.setPage(\'admin\'); render();">Painel Admin</button>' : ''}
+    
+    <button class="menu-item logout" onclick="showToast('Saindo da Conta...'); setTimeout(() => { appState.logout(); appState.setPage('home'); render(); }, 1500);">Sair</button>
+</nav>
                     </aside>
 
                     <section class="profile-main">
@@ -500,7 +499,8 @@ class Pages {
             { status: 'Nota emitida', location: 'Financeiro ShopBr' },
             { status: 'Postado', location: 'Transportadora' },
             { status: 'Em trânsito', location: 'Centro de Distribuição' },
-            { status: 'Entregue', location: 'Entrega final'
+            {
+                status: 'Entregue', location: 'Entrega final'
             }
         ];
 
@@ -568,7 +568,7 @@ class Pages {
         `;
     }
 
-   static renderAdmin() {
+    static renderAdmin() {
         if (!appState.user || !appState.user.is_admin) {
             return `
                 <main class="main-content">
@@ -589,7 +589,7 @@ class Pages {
                     <div class="admin-columns">
                         <div class="admin-col-form">
                             <h2>Adicionar Produto</h2>
-                            <form onsubmit="handleAdminCreateProduct(event)" class="admin-form">
+                            <form onsubmit="handleAdminCreateProduct(event)" class="admin-form" enctype="multipart/form-data">
                                 <input type="text" name="nome" placeholder="Nome do Produto" required class="form-input">
                                 
                                 <select name="categoria" required class="form-input">
@@ -605,7 +605,9 @@ class Pages {
 
                                 <input type="number" name="preco" step="0.01" placeholder="Preço" required class="form-input">
                                 <input type="number" name="estoque" placeholder="Estoque" required class="form-input">
-                                <input type="url" name="imagem_url" placeholder="URL da Imagem" required class="form-input">
+                                
+                                <input type="file" name="imagem" accept="image/*" required class="form-input">
+                                
                                 <textarea name="descricao" placeholder="Descrição..." rows="4" class="form-input"></textarea>
                                 <button type="submit" class="btn btn-primary">Adicionar</button>
                             </form>
@@ -641,7 +643,7 @@ class Pages {
                 <div id="editProductModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center;">
                     <div style="background: white; padding: 30px; border-radius: 8px; width: 90%; max-width: 500px;">
                         <h2>Editar Produto</h2>
-                        <form onsubmit="handleAdminUpdateProduct(event)" class="admin-form" id="editProductForm">
+                        <form onsubmit="handleAdminUpdateProduct(event)" class="admin-form" id="editProductForm" enctype="multipart/form-data">
                             <input type="hidden" name="id" id="edit-id">
                             
                             <input type="text" name="nome" id="edit-nome" placeholder="Nome do Produto" required class="form-input" style="margin-bottom: 10px;">
@@ -659,7 +661,9 @@ class Pages {
 
                             <input type="number" name="preco" id="edit-preco" step="0.01" placeholder="Preço" required class="form-input" style="margin-bottom: 10px;">
                             <input type="number" name="estoque" id="edit-estoque" placeholder="Estoque" required class="form-input" style="margin-bottom: 10px;">
-                            <input type="url" name="imagem_url" id="edit-imagem_url" placeholder="URL da Imagem" required class="form-input" style="margin-bottom: 10px;">
+                            
+                            <input type="file" name="imagem" id="edit-imagem" accept="image/*" class="form-input" style="margin-bottom: 10px;">
+                            
                             <textarea name="descricao" id="edit-descricao" placeholder="Descrição..." rows="4" class="form-input" style="margin-bottom: 15px;"></textarea>
                             
                             <div style="display: flex; gap: 10px;">
